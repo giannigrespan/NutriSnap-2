@@ -1,0 +1,6 @@
+{
+  "name": "NutriSnap AI",
+  "description": "Una app intelligente per gestire la tua dieta tramite foto, monitorare l'attività fisica e creare piani alimentari personalizzati.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["vision", "chat"]
+}

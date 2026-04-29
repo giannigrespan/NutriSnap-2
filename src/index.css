@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-primary: #10B981;
+  --color-brand-secondary: #059669;
+  --color-brand-bg: #F9FAFB;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-bg text-gray-900 font-sans antialiased;
+  }
+}
+
+.glass-card {
+  @apply bg-white/80 backdrop-blur-md border border-gray-100 rounded-3xl shadow-sm;
+}
+
+.btn-primary {
+  @apply bg-brand-primary text-white px-6 py-3 rounded-2xl font-medium transition-all hover:bg-brand-secondary active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+.input-field {
+  @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all;
+}

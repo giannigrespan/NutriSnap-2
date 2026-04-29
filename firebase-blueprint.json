@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Physical data and goals of the user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "age": { "type": "number" },
+        "height": { "type": "number" },
+        "weight": { "type": "number" },
+        "gender": { "type": "string", "enum": ["male", "female", "other"] },
+        "activityLevel": { "type": "string", "enum": ["sedentary", "light", "moderate", "active", "very_active"] },
+        "goal": { "type": "string", "enum": ["lose_weight", "maintain", "gain_muscle"] },
+        "dailyCalorieTarget": { "type": "number" },
+        "wahooAccessToken": { "type": "string" },
+        "wahooRefreshToken": { "type": "string" },
+        "wahooTokenExpiresAt": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "age", "height", "weight", "activityLevel", "goal"]
+    },
+    "FoodLog": {
+      "title": "Food Entry",
+      "description": "A food item logged by the user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "mealType": { "type": "string", "enum": ["breakfast", "lunch", "dinner", "snack"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "calories"]
+    },
+    "ExerciseLog": {
+      "title": "Physical Activity",
+      "description": "An exercise session logged by the user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "activityType": { "type": "string" },
+        "durationMinutes": { "type": "number" },
+        "caloriesBurned": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "activityType", "durationMinutes", "caloriesBurned"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document"
+    },
+    "/foodLogs/{logId}": {
+      "schema": "FoodLog",
+      "description": "Individual food entries"
+    },
+    "/exerciseLogs/{logId}": {
+      "schema": "ExerciseLog",
+      "description": "Individual exercise entries"
+    }
+  }
+}
