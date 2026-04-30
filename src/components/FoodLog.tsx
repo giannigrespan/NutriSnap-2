@@ -6,6 +6,7 @@ import { useAuth } from '../AuthContext';
 import { cn, safeDate } from '../lib/utils';
 import { startOfDay, endOfDay } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, CartesianGrid, LabelList } from 'recharts';
 import { FoodEntry } from '../types';
 
 export default function FoodLog() {
@@ -442,6 +443,59 @@ export default function FoodLog() {
                 )}
               </motion.div>
             ))}
+          </div>
+
+          <div className="mt-12 glass-card p-6 md:p-8">
+            <h3 className="text-xl font-bold mb-6">Riepilogo Giornaliero</h3>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 border-b pb-2">Calorie (kcal)</h4>
+                    <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={[{ name: 'Calorie', value: todayLogs.reduce((acc, log) => acc + log.calories, 0), fill: '#10b981' }]} margin={{ top: 20, right: 60, left: 0, bottom: 5 }} layout="vertical">
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                                <XAxis type="number" hide />
+                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={80} tick={{ fontSize: 13, fontWeight: 'bold' }} />
+                                <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} formatter={(value: number) => [`${value} kcal`, 'Totale']} />
+                                <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={40}>
+                                    <LabelList dataKey="value" position="right" formatter={(val: number) => `${val} kcal`} style={{ fill: '#374151', fontSize: 13, fontWeight: 'bold' }} />
+                                    <Cell fill="#10b981" />
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+                <div>
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 border-b pb-2">Macronutrienti (g)</h4>
+                    <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={[
+                                { name: 'Proteine', value: todayLogs.reduce((acc, log) => acc + log.protein, 0), fill: '#3b82f6' },
+                                { name: 'Carboidrati', value: todayLogs.reduce((acc, log) => acc + log.carbs, 0), fill: '#f97316' },
+                                { name: 'Grassi', value: todayLogs.reduce((acc, log) => acc + log.fat, 0), fill: '#ef4444' }
+                            ]} margin={{ top: 20, right: 60, left: 0, bottom: 5 }} layout="vertical">
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                                <XAxis type="number" hide />
+                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={80} tick={{ fontSize: 13, fontWeight: 'bold' }} />
+                                <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} formatter={(value: number) => [`${value} g`, 'Totale']} />
+                                <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={24}>
+                                    <LabelList dataKey="value" position="right" formatter={(val: number) => `${val} g`} style={{ fill: '#374151', fontSize: 13, fontWeight: 'bold' }} />
+                                    {
+                                        [
+                                            { fill: '#3b82f6' },
+                                            { fill: '#f97316' },
+                                            { fill: '#ef4444' }
+                                        ].map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))
+                                    }
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
           </div>
         </div>
       )}

@@ -84,8 +84,9 @@ service cloud.firestore {
       function isValidExerciseLog(data) {
         return data.userId == request.auth.uid &&
                data.caloriesBurned is number && data.caloriesBurned >= 0 &&
-               data.durationMinutes is number && data.durationMinutes > 0 &&
-               data.activityType is string;
+               data.durationMinutes is number && data.durationMinutes >= 0 &&
+               data.activityType is string &&
+               (!('workoutDetails' in data) || (data.workoutDetails is list && data.workoutDetails.size() <= 30));
       }
 
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;

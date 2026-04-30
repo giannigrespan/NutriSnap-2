@@ -30,6 +30,13 @@ export interface FoodEntry {
   createdAt: any;
 }
 
+export interface WorkoutDetail {
+  name: string;
+  sets: number;
+  reps: number;
+  weight: number;
+}
+
 export interface ExerciseEntry {
   id?: string;
   userId: string;
@@ -37,5 +44,6 @@ export interface ExerciseEntry {
   activityType: string;
   durationMinutes: number;
   caloriesBurned: number;
+  workoutDetails?: WorkoutDetail[];
   createdAt: any;
 }
