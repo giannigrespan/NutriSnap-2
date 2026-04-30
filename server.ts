@@ -146,6 +146,31 @@ async function startServer() {
     }
   });
 
+  // --- GROQ API PROXY ---
+  app.post('/api/groq/chat', async (req, res) => {
+    try {
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+         return res.status(500).json({ error: "GROQ_API_KEY not configured" });
+      }
+
+      const response = await axios.post(
+        'https://api.groq.com/openai/v1/chat/completions',
+        req.body,
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      res.json(response.data);
+    } catch (error: any) {
+      console.error('Groq Proxy Error:', error.response?.data || error.message);
+      res.status(error.response?.status || 500).json(error.response?.data || { error: 'Groq connection failed' });
+    }
+  });
+
   // --- VITE MIDDLEWARE ---
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
