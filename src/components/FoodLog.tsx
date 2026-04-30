@@ -105,14 +105,30 @@ export default function FoodLog() {
     }
   };
 
+  const compressImage = (dataUrl: string, maxPx = 800, quality = 0.7): Promise<string> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = dataUrl;
+    });
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = async () => {
-      const base64String = (reader.result as string).split(',')[1];
-      setImagePreview(reader.result as string);
+      const original = reader.result as string;
+      const compressed = await compressImage(original);
+      const base64String = compressed.split(',')[1];
+      setImagePreview(compressed);
       setAnalyzing(true);
       try {
         const analysis = await analyzeFoodImage(base64String);
