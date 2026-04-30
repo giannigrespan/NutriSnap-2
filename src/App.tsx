@@ -69,11 +69,11 @@ export default function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<ProtectedRoute><Layout /><Home /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/food" element={<ProtectedRoute><Layout /><FoodLog /></ProtectedRoute>} />
-          <Route path="/activity" element={<ProtectedRoute><Layout /><ActivityLog /></ProtectedRoute>} />
-          <Route path="/plan" element={<ProtectedRoute><Layout /><Plan /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><Layout><Home /></Layout></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
+          <Route path="/food" element={<ProtectedRoute><Layout><FoodLog /></Layout></ProtectedRoute>} />
+          <Route path="/activity" element={<ProtectedRoute><Layout><ActivityLog /></Layout></ProtectedRoute>} />
+          <Route path="/plan" element={<ProtectedRoute><Layout><Plan /></Layout></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
