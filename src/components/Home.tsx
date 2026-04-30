@@ -243,7 +243,7 @@ export default function Home() {
               Andamento Settimanale
             </h3>
           </div>
-          <div className="flex-1 w-full">
+          <div className="flex-1 w-full min-h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />

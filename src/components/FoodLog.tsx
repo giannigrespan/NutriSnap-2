@@ -32,9 +32,13 @@ export default function FoodLog() {
     try {
       const analysis = await analyzeFoodText(textInput);
       setResult(analysis);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Analysis failed:", err);
-      alert("Impossibile analizzare il testo. Riprova.");
+      if (err?.message?.includes("429") || err?.message?.includes("RESOURCE_EXHAUSTED")) {
+        alert("Limite AI superato (quota). Riprova tra un po' o aggiorna il piano.");
+      } else {
+        alert("Impossibile analizzare il testo. Riprova.");
+      }
     } finally {
       setAnalyzingText(false);
       setTextInput('');
@@ -113,9 +117,13 @@ export default function FoodLog() {
       try {
         const analysis = await analyzeFoodImage(base64String);
         setResult(analysis);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Analysis failed:", err);
-        alert("Impossibile analizzare l'immagine. Riprova.");
+        if (err?.message?.includes("429") || err?.message?.includes("RESOURCE_EXHAUSTED")) {
+          alert("Limite AI superato (quota). Riprova tra un po' o aggiorna il piano.");
+        } else {
+          alert("Impossibile analizzare l'immagine. Riprova.");
+        }
       } finally {
         setAnalyzing(false);
       }
@@ -504,7 +512,7 @@ export default function FoodLog() {
             <div className="grid md:grid-cols-2 gap-8">
                 <div>
                     <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 border-b pb-2">Calorie (kcal)</h4>
-                    <div className="h-48">
+                    <div className="h-48 min-h-[150px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={[{ name: 'Calorie', value: todayLogs.reduce((acc, log) => acc + log.calories, 0), fill: '#10b981' }]} margin={{ top: 20, right: 60, left: 0, bottom: 5 }} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
@@ -521,7 +529,7 @@ export default function FoodLog() {
                 </div>
                 <div>
                     <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 border-b pb-2">Macronutrienti (g)</h4>
-                    <div className="h-48">
+                    <div className="h-48 min-h-[150px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={[
                                 { name: 'Proteine', value: todayLogs.reduce((acc, log) => acc + log.protein, 0), fill: '#3b82f6' },

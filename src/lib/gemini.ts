@@ -97,14 +97,36 @@ export async function analyzeFoodText(foodDescription: string): Promise<FoodAnal
   return JSON.parse(responseText) as FoodAnalysis;
 }
 
-export async function generateMealPlan(userProfile: any, recentLogs: any[]): Promise<string> {
+export async function generatePlan(
+  userProfile: any, 
+  foodLogs: any[], 
+  exerciseLogs: any[], 
+  planType: 'meals' | 'workout' | 'both',
+  specificRequest: string
+): Promise<string> {
   const model = "gemini-3.1-pro-preview";
+  
+  let instructions = "";
+  if (planType === 'meals') {
+    instructions = `Genera un piano alimentare personalizzato per domani (3 pasti + 1 snack). Basati su quanto ha mangiato e bruciato recentemente.`;
+  } else if (planType === 'workout') {
+    instructions = `Genera un piano di allenamento dettagliato per la prossima sessione. Seleziona gli esercizi in base ai log passati e all'obiettivo.`;
+  } else {
+    instructions = `Genera un piano giornaliero completo comprendente sia l'alimentazione (3 pasti + snack) sia la sessione di allenamento. Fai in modo che l'alimentazione supporti l'allenamento suggerito.`;
+  }
+
   const prompt = `
-    Basandoti sul profilo utente: ${JSON.stringify(userProfile)} 
-    e sui log recenti: ${JSON.stringify(recentLogs)},
-    genera un piano alimentare personalizzato per domani (3 pasti + 1 snack). 
-    Includi consigli specifici per i suoi obiettivi fisici.
-    Usa il formato Markdown.
+    Sei un fitness e nutrition coach professionista.
+    
+    Profilo utente: ${JSON.stringify(userProfile)} 
+    Log alimentari recenti: ${JSON.stringify(foodLogs)}
+    Log allenamenti recenti: ${JSON.stringify(exerciseLogs)}
+    
+    Richiesta/Note dell'utente: "${specificRequest || "Nessuna nota specifica"}"
+
+    ${instructions}
+
+    Fornisci il risultato BEN FORMATTATO in Markdown, con intestazioni chiare, elenchi puntati per i pasti o gli esercizi (con set/reps se applicabile), e un breve paragrafo narrativo motivazionale basato sulle sue richieste. Usa un tono incoraggiante e da coach.
   `;
 
   const response = await ai.models.generateContent({
@@ -112,5 +134,5 @@ export async function generateMealPlan(userProfile: any, recentLogs: any[]): Pro
     contents: prompt,
   });
 
-  return response.text || "Impossibile generare il piano alimentare al momento.";
+  return response.text || "Impossibile generare il piano al momento.";
 }
