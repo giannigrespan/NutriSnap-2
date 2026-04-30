@@ -39,18 +39,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    getRedirectResult(auth).catch(() => {});
+    let unsubscribe: () => void;
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        await fetchProfile(user.uid);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-    return unsubscribe;
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          console.log("Redirect login success:", result.user.email);
+        }
+      })
+      .catch((err) => {
+        console.error("Redirect result error:", err.code, err.message);
+      })
+      .finally(() => {
+        unsubscribe = onAuthStateChanged(auth, async (user) => {
+          setUser(user);
+          if (user) {
+            await fetchProfile(user.uid);
+          } else {
+            setProfile(null);
+          }
+          setLoading(false);
+        });
+      });
+
+    return () => unsubscribe?.();
   }, []);
 
   const refreshProfile = async () => {
