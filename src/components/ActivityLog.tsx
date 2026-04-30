@@ -92,25 +92,27 @@ export default function ActivityLog() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-10">
+    <div className="max-w-2xl mx-auto py-6 md:py-10">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="glass-card p-10"
+        className="glass-card p-6 md:p-10"
       >
-        <div className="flex items-center gap-4 mb-10">
-          <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center">
-            <Dumbbell size={32} />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold tracking-tight">Log Attività</h1>
-            <p className="text-gray-500">Monitora le calorie bruciate oggi</p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8 sm:mb-10">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center">
+              <Dumbbell size={28} className="sm:w-8 sm:h-8" />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Log Attività</h1>
+              <p className="text-sm sm:text-base text-gray-500">Monitora le calorie bruciate</p>
+            </div>
           </div>
           <button 
             type="button" 
             onClick={handleSyncWahoo} 
             disabled={syncing}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-bold text-sm hover:bg-blue-100 transition-all border border-blue-100"
+            className="flex items-center justify-center sm:justify-start w-full sm:w-auto gap-2 px-4 py-3 sm:py-2 bg-blue-50 text-blue-600 rounded-xl font-bold text-sm hover:bg-blue-100 transition-all border border-blue-100"
           >
             {syncing ? <Loader2 className="animate-spin" size={18} /> : <img src="https://developers.wahoofitness.com/img/WahooLogo_Blue_on_Transparent.png" className="w-6 h-6 object-contain" alt="Wahoo" referrerPolicy="no-referrer" />}
             Sincronizza Wahoo

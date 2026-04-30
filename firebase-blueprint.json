@@ -36,6 +36,7 @@
         "carbs": { "type": "number" },
         "fat": { "type": "number" },
         "mealType": { "type": "string", "enum": ["breakfast", "lunch", "dinner", "snack"] },
+        "notes": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "date", "calories"]

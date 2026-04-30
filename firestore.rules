@@ -64,7 +64,8 @@ service cloud.firestore {
                data.carbs is number &&
                data.fat is number &&
                data.date is string &&
-               data.mealType in ['breakfast', 'lunch', 'dinner', 'snack'];
+               data.mealType in ['breakfast', 'lunch', 'dinner', 'snack'] &&
+               (!('notes' in data) || data.notes is string);
       }
 
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;

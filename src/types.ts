@@ -26,6 +26,7 @@ export interface FoodEntry {
   carbs: number;
   fat: number;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  notes?: string;
   createdAt: any;
 }
 

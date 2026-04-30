@@ -56,15 +56,15 @@ export default function Plan() {
       </div>
 
       {!plan && !loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="glass-card p-8 flex flex-col items-center text-center space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="glass-card p-6 md:p-8 flex flex-col items-center text-center space-y-4">
             <div className="w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary">
               <Apple size={32} />
             </div>
             <h3 className="text-xl font-bold">Piano Giornaliero</h3>
             <p className="text-gray-500">Un piano specifico per le prossime 24 ore considerando i log precedenti.</p>
           </div>
-          <div className="glass-card p-8 flex flex-col items-center text-center space-y-4">
+          <div className="glass-card p-6 md:p-8 flex flex-col items-center text-center space-y-4">
             <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-500">
               <Bookmark size={32} />
             </div>
@@ -85,7 +85,7 @@ export default function Plan() {
         <motion.div
            initial={{ opacity: 0, y: 20 }}
            animate={{ opacity: 1, y: 0 }}
-           className="glass-card p-10 prose prose-emerald max-w-none prose-headings:font-bold prose-p:text-gray-600 prose-li:text-gray-600"
+           className="glass-card p-6 md:p-10 prose prose-emerald max-w-none prose-headings:font-bold prose-p:text-gray-600 prose-li:text-gray-600"
         >
           <div className="flex justify-end mb-4">
              <button onClick={() => setPlan(null)} className="text-sm text-gray-400 hover:text-gray-600 underline">Rigenera nuovo piano</button>

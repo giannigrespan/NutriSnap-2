@@ -61,11 +61,11 @@ export default function Profile() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-6">
+    <div className="max-w-2xl mx-auto py-6 md:py-10 px-2 sm:px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card p-10"
+        className="glass-card p-6 md:p-10"
       >
         <div className="flex items-center gap-4 mb-8">
           <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center text-brand-primary">

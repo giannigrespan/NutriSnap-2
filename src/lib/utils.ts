@@ -27,3 +27,10 @@ export function calculateTDEE(bmr: number, activityLevel: string): number {
   };
   return bmr * (factors[activityLevel] || 1.2);
 }
+
+export function safeDate(val: any): Date {
+  if (!val) return new Date();
+  if (typeof val?.toDate === 'function') return val.toDate();
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? new Date() : d;
+}
