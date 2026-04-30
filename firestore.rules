@@ -99,5 +99,24 @@ service cloud.firestore {
                     incoming().createdAt == existing().createdAt;
       allow delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
+
+    // Weight Logs Rules
+    match /weightLogs/{logId} {
+      function isValidWeightLog(data) {
+        return data.userId == request.auth.uid &&
+               data.weight is number && data.weight > 0 &&
+               data.date is string;
+      }
+
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && 
+                    isValidWeightLog(incoming()) && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && existing().userId == request.auth.uid && 
+                    isValidWeightLog(incoming()) && 
+                    incoming().userId == existing().userId &&
+                    incoming().createdAt == existing().createdAt;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
   }
 }

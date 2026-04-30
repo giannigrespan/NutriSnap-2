@@ -57,6 +57,46 @@ export async function analyzeFoodImage(base64Image: string): Promise<FoodAnalysi
   return JSON.parse(text) as FoodAnalysis;
 }
 
+export async function analyzeFoodText(foodDescription: string): Promise<FoodAnalysis> {
+  const model = "gemini-3-flash-preview";
+  
+  const response = await ai.models.generateContent({
+    model,
+    contents: [
+      {
+        parts: [
+          {
+            text: `Analizza questa descrizione di cibo: "${foodDescription}". Restituisci un oggetto JSON con una descrizione formattata del piatto (max 5 parole), una stima delle calorie, proteine (g), carboidrati (g) e grassi (g). Indica anche il tipo di pasto più probabile tra 'breakfast', 'lunch', 'dinner', 'snack'. Rispondi SOLO in formato JSON valido.`,
+          },
+        ],
+      },
+    ],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          description: { type: Type.STRING },
+          calories: { type: Type.NUMBER },
+          protein: { type: Type.NUMBER },
+          carbs: { type: Type.NUMBER },
+          fat: { type: Type.NUMBER },
+          mealType: { 
+            type: Type.STRING,
+            enum: ["breakfast", "lunch", "dinner", "snack"]
+          },
+        },
+        required: ["description", "calories", "protein", "carbs", "fat", "mealType"],
+      },
+    },
+  });
+
+  const responseText = response.text;
+  if (!responseText) throw new Error("Nessuna risposta dal modello");
+  
+  return JSON.parse(responseText) as FoodAnalysis;
+}
+
 export async function generateMealPlan(userProfile: any, recentLogs: any[]): Promise<string> {
   const model = "gemini-3.1-pro-preview";
   const prompt = `

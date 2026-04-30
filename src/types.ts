@@ -37,6 +37,14 @@ export interface WorkoutDetail {
   weight: number;
 }
 
+export interface WeightLog {
+  id?: string;
+  userId: string;
+  date: string;
+  weight: number;
+  createdAt: any;
+}
+
 export interface ExerciseEntry {
   id?: string;
   userId: string;

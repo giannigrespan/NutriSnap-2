@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, Image as ImageIcon, Upload, Loader2, Apple, Check, X, Pencil, Trash2 } from 'lucide-react';
-import { analyzeFoodImage, FoodAnalysis } from '../lib/gemini';
+import { Camera, Image as ImageIcon, Upload, Loader2, Apple, Check, X, Pencil, Trash2, Plus, Search } from 'lucide-react';
+import { analyzeFoodImage, analyzeFoodText, FoodAnalysis } from '../lib/gemini';
 import { db, handleFirestoreError, OperationType, serverTimestamp, collection, addDoc, query, where, onSnapshot, doc, updateDoc, deleteDoc } from '../lib/firebase';
 import { useAuth } from '../AuthContext';
 import { cn, safeDate } from '../lib/utils';
@@ -12,6 +12,8 @@ import { FoodEntry } from '../types';
 export default function FoodLog() {
   const { user } = useAuth();
   const [analyzing, setAnalyzing] = useState(false);
+  const [analyzingText, setAnalyzingText] = useState(false);
+  const [textInput, setTextInput] = useState('');
   const [result, setResult] = useState<FoodAnalysis | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,6 +24,22 @@ export default function FoodLog() {
   const [todayLogs, setTodayLogs] = useState<FoodEntry[]>([]);
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<FoodEntry>>({});
+
+  const handleTextAnalysis = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!textInput.trim()) return;
+    setAnalyzingText(true);
+    try {
+      const analysis = await analyzeFoodText(textInput);
+      setResult(analysis);
+    } catch (err) {
+      console.error("Analysis failed:", err);
+      alert("Impossibile analizzare il testo. Riprova.");
+    } finally {
+      setAnalyzingText(false);
+      setTextInput('');
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -189,7 +207,7 @@ export default function FoodLog() {
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-primary/10 text-brand-primary rounded-full text-xs font-bold uppercase tracking-wider">
-                  <Apple size={14} /> Analisi Completata
+                  <Apple size={14} /> Dettagli Pasto
                 </div>
                 <button onClick={() => { setResult(null); setImagePreview(null); }} className="text-gray-400 hover:text-red-500">
                   <X size={20} />
@@ -199,6 +217,7 @@ export default function FoodLog() {
               <input
                 value={result.description}
                 onChange={(e) => setResult({ ...result, description: e.target.value })}
+                placeholder="Nome del pasto (es. Barretta Proteica)"
                 className="text-xl md:text-2xl font-bold mb-2 bg-transparent border-b border-transparent hover:border-gray-200 focus:border-brand-primary focus:outline-none transition-colors w-full pb-1"
               />
               <div className="flex gap-4 mb-4 md:mb-6">
@@ -295,16 +314,50 @@ export default function FoodLog() {
 
               <button 
                 onClick={saveLog}
-                disabled={saving}
-                className="btn-primary w-full mt-auto flex items-center justify-center gap-2"
+                disabled={saving || !result.description.trim() || result.calories <= 0}
+                className="btn-primary w-full mt-auto flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {saving ? <Loader2 className="animate-spin" size={20} /> : <Check size={20} />}
                 {saving ? 'Salvataggio...' : 'Conferma e Logga'}
               </button>
             </motion.div>
           ) : !analyzing && (
-            <div className="flex items-center justify-center border-2 border-dashed border-gray-100 rounded-3xl p-10 text-center text-gray-400 italic">
-              Carica un'immagine per vedere i dettagli nutrizionali qui
+            <div className="flex flex-col gap-4 mt-6 md:mt-8">
+              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Ricerca Testuale</h3>
+              <form onSubmit={handleTextAnalysis} className="flex gap-2">
+                <input
+                  type="text"
+                  value={textInput}
+                  onChange={e => setTextInput(e.target.value)}
+                  placeholder="Scrivi cosa hai mangiato (es. 1 banana, petto di pollo)"
+                  className="input-field flex-1"
+                  disabled={analyzingText}
+                />
+                <button
+                  type="submit"
+                  disabled={analyzingText || !textInput.trim()}
+                  className="btn-primary flex items-center justify-center px-6 bg-emerald-500 hover:bg-emerald-600 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {analyzingText ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
+                  <span className="hidden sm:inline sm:ml-2">{analyzingText ? 'Analizzo...' : 'Cerca'}</span>
+                </button>
+              </form>
+
+              <div className="flex items-center gap-4 my-2">
+                <div className="h-px bg-gray-200 flex-1"></div>
+                <span className="text-gray-400 text-xs font-semibold uppercase">oppure</span>
+                <div className="h-px bg-gray-200 flex-1"></div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-3xl p-6 text-center text-gray-400">
+                <p className="italic mb-4 text-sm">Non vuoi usare l'AI? Inserisci tu i dati</p>
+                <button 
+                  onClick={() => setResult({ description: '', calories: 0, protein: 0, carbs: 0, fat: 0, mealType: 'lunch' })}
+                  className="btn-secondary px-6 py-2.5 border border-gray-200 rounded-xl font-semibold hover:bg-gray-50 flex items-center gap-2 transition-colors text-sm"
+                >
+                  <Plus size={18} /> Inserimento Manuale
+                </button>
+              </div>
             </div>
           )}
         </AnimatePresence>

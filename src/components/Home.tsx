@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, query, where, onSnapshot, orderBy, limit, deleteDoc, doc } from 'firebase/firestore';
-import { FoodEntry, ExerciseEntry } from '../types';
+import { db, handleFirestoreError, OperationType, serverTimestamp } from '../lib/firebase';
+import { collection, query, where, onSnapshot, orderBy, limit, deleteDoc, doc, addDoc, updateDoc } from 'firebase/firestore';
+import { FoodEntry, ExerciseEntry, WeightLog } from '../types';
 import { formatNumber, cn, safeDate } from '../lib/utils';
 import { motion } from 'motion/react';
-import { Flame, Apple, Dumbbell, ChevronRight, TrendingUp, Trash2 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { startOfDay, format, isSameDay, subDays } from 'date-fns';
+import { Flame, Apple, Dumbbell, ChevronRight, TrendingUp, Trash2, Scale, Plus } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area } from 'recharts';
+import { startOfDay, format, isSameDay, subDays, endOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 export default function Home() {
   const { profile, user } = useAuth();
   const [foodLogs, setFoodLogs] = useState<FoodEntry[]>([]);
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseEntry[]>([]);
+  const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
+  const [todayWeight, setTodayWeight] = useState<string>('');
+  const [isSubmittingWeight, setIsSubmittingWeight] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -32,6 +35,13 @@ export default function Home() {
       limit(50)
     );
 
+    const qWeight = query(
+      collection(db, 'weightLogs'),
+      where('userId', '==', user.uid),
+      orderBy('date', 'desc'),
+      limit(30)
+    );
+
     const unsubFood = onSnapshot(qFood, (snapshot) => {
       setFoodLogs(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as FoodEntry)));
     });
@@ -40,9 +50,14 @@ export default function Home() {
       setExerciseLogs(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ExerciseEntry)));
     });
 
+    const unsubWeight = onSnapshot(qWeight, (snapshot) => {
+      setWeightLogs(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as WeightLog)));
+    });
+
     return () => {
       unsubFood();
       unsubEx();
+      unsubWeight();
     };
   }, [user]);
 
@@ -55,6 +70,37 @@ export default function Home() {
   const target = profile?.dailyCalorieTarget || 2000;
   const net = consumed - burned;
   const remaining = target - net;
+
+  const handleSaveWeight = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !todayWeight || isNaN(Number(todayWeight))) return;
+
+    setIsSubmittingWeight(true);
+    try {
+      const todayString = startOfDay(new Date()).toISOString();
+      const existingTodayLog = weightLogs.find(wl => isSameDay(safeDate(wl.date), today));
+
+      if (existingTodayLog && existingTodayLog.id) {
+        // Update existing weight log
+        await updateDoc(doc(db, 'weightLogs', existingTodayLog.id), {
+          weight: Number(todayWeight)
+        });
+      } else {
+        // Create new
+        await addDoc(collection(db, 'weightLogs'), {
+          userId: user.uid,
+          date: todayString,
+          weight: Number(todayWeight),
+          createdAt: serverTimestamp()
+        });
+      }
+      setTodayWeight('');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'weightLogs');
+    } finally {
+      setIsSubmittingWeight(false);
+    }
+  };
 
   const handleDeleteLog = async (id: string, isFood: boolean) => {
     if (!window.confirm('Vuoi eliminare questo log?')) return;
@@ -76,6 +122,20 @@ export default function Home() {
       burned: dayEx.reduce((acc, log) => acc + log.caloriesBurned, 0),
     };
   });
+
+  const weightChartData = Array.from({ length: 14 }).map((_, i) => {
+    const d = subDays(new Date(), 13 - i);
+    const dayLog = weightLogs.find(wl => isSameDay(safeDate(wl.date), d));
+    return {
+      name: format(d, 'dd/MM'),
+      weight: dayLog ? dayLog.weight : null
+    };
+  }).filter((d, i, arr) => {
+    // Keep only if we have data, or if it's the last few days to show the line ending somewhere
+    return true; // We keep all for a continuous timeline, recharts connects nulls with connectNulls
+  });
+  
+  // Find last known weight to fill empty points for better visual, only if user wants it (connectNulls does this)
 
   const stats = [
     { label: 'Assunte', value: consumed, icon: Apple, color: 'text-orange-500', bg: 'bg-orange-50' },
@@ -112,6 +172,63 @@ export default function Home() {
           </motion.div>
         ))}
       </div>
+
+      {/* Weight Tracker Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card p-4 md:p-8 flex flex-col lg:flex-row gap-8"
+      >
+        <div className="lg:w-1/3 flex flex-col justify-center">
+            <h3 className="text-lg md:text-xl font-bold flex items-center gap-2 mb-2">
+                <Scale size={20} className="text-purple-500" />
+                Peso Corporeo
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">Tieni traccia del tuo peso ogni mattina per un andamento accurato.</p>
+            
+            <form onSubmit={handleSaveWeight} className="flex gap-3">
+                <input 
+                    type="number"
+                    step="0.1"
+                    min="30"
+                    max="300"
+                    required
+                    value={todayWeight}
+                    onChange={(e) => setTodayWeight(e.target.value)}
+                    placeholder="es. 75.5"
+                    className="input-field flex-1 text-lg font-bold"
+                />
+                <button type="submit" disabled={isSubmittingWeight || !todayWeight} className="btn-primary bg-purple-500 hover:bg-purple-600 px-6 shrink-0 flex items-center justify-center">
+                    {isSubmittingWeight ? <span className="w-5 h-5 border-2 border-white rounded-full border-t-transparent animate-spin" /> : <Plus size={20} />}
+                </button>
+            </form>
+            {weightLogs.filter(wl => isSameDay(safeDate(wl.date), today)).length > 0 && (
+                <p className="text-xs font-semibold text-emerald-500 mt-3 flex items-center gap-1">
+                   ✓ Peso di oggi registrato
+                </p>
+            )}
+        </div>
+        <div className="lg:w-2/3 min-h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={weightChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#999' }} />
+                    <YAxis domain={['dataMin - 1', 'dataMax + 1']} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#999' }} tickFormatter={(val) => val.toFixed(1)} />
+                    <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        formatter={(value: number) => [`${value} kg`, 'Peso']}
+                    />
+                    <Area type="monotone" dataKey="weight" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorWeight)" connectNulls={true} />
+                </AreaChart>
+            </ResponsiveContainer>
+        </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Chart */}

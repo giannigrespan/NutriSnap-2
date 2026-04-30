@@ -54,6 +54,18 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "date", "activityType", "durationMinutes", "caloriesBurned"]
+    },
+    "WeightLog": {
+      "title": "Weight Entry",
+      "description": "A daily weight entry logged by the user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "weight": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "weight"]
     }
   },
   "firestore": {
@@ -68,6 +80,10 @@
     "/exerciseLogs/{logId}": {
       "schema": "ExerciseLog",
       "description": "Individual exercise entries"
+    },
+    "/weightLogs/{logId}": {
+      "schema": "WeightLog",
+      "description": "Individual weight entries"
     }
   }
 }
